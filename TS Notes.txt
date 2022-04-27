@@ -1,0 +1,115 @@
+Create a template project in current folder using SnowPack:
+
+    npx create-snowpack-app . --template @snowpack/app-template-blank-typescript --force
+
+All variables must have an explicit type:
+
+    const list = document.querySelector("#list") as HTMLUListElement;
+
+or
+
+    const list = document.querySelector<HTMLUListElement>("#list");
+
+or
+
+    const list = document.querySelector("#list") as HTMLUListElement | null;
+
+or
+
+    function addListItem(task: {
+        id: string
+        title: string
+        completed: boolean
+        createdAt: Date
+    }) {
+        //function code
+    }
+
+Failing to assign a type will cause an 'implicit type any' error, meaning TypeScript will not let you forget to give a new variable a type explicitly.
+
+The above function looks a bit messy, especially if we are going to have a lot of variables of this type. Luckily, you can predefine a type and use it for multiple items
+
+    type Task = {
+        id: string;
+        title: string;
+        completed: boolean;
+        createdAt: Date;
+    };
+
+    function addListItem(task: Task) {
+        //function code
+    }
+
+imported libraries must also conform to this. Often there is already a package that can resolve this, for example, when importing uuid you will get an error. Hovering over it will suggest installing the following dev dependancy
+
+    npm i --save-dev @types/uuid
+
+This will assign the correct types for everything in uuid. If this is not available for a library you will have to give types yourself or in tsconfig.json you could set ["noImplicitAny": false] to stop this error, although this would slightly defeat the point of using TypeScript in the first place.
+
+To put it another way, the whole point of TypeScript is to throw this small errors now while we're building our app rather than allowing things to have 'any' type and causing giant bugs later that we have to dig through our code to fix.
+
+Once you've assigned a type to a variable you can hover over it to see the details of its type.
+
+If we set a predefined type and then create a new object that has all the same property types as that type then TypeScript will automatically assume it is of that type
+
+    type Task = {
+        id: string;
+        title: string;
+        completed: boolean;
+        createdAt: Date;
+    };
+
+    const newTask = {
+        id: uuidV4(),
+        title: input.value,
+        completed: false,
+        createdAt: new Date(),
+    };
+
+We do not set the type of newTask and there is no error. If we do still want to set the type explicitly we can do so like this
+
+    const newTask: Task = {
+        id: uuidV4(),
+        title: input.value,
+        completed: false,
+        createdAt: new Date(),
+    };
+
+We can also do things like create an array of a predefined types
+
+    const tasks: Task[] = []
+
+This will only let us add objects of type Task into this array.
+
+If we create an element using createElement() in TypeScript we do not need to explicitly assign a type since it is inferred from the element created
+
+    const item = document.createElement("li")
+
+Hovering over item will reveal it is already considered an HTMLLIElement by TS
+
+Functions also have a type which TypeScript will infer from their return type e.g. if a function returns true it will have the type boolean. If nothing is returned from a function it has the type void.
+
+We can also explicitly assign a type to a function and we will get an error if we then try to return a different type. For example, the function below would cause an error
+
+    function myFunc(count: number): boolean {
+        return count + 1
+    }
+
+This function has to return a boolean an so this would not work. We would either have to return a boolean instead of a number, change the function type to number, or not explicitly set a type, defaulting the function's type to the type of what it returns.
+
+TypeScript will often what to cover cases where there is a chance something could not exist or be null. To satisfy this we use optional chaining such as this
+
+    if (input?.value == "" || input?.value == null) return;
+
+This protects us from unexpected errors caused by missing or null items.
+
+Here's another example, checking that local storage is not null and setting the function type explicitly
+
+    function loadTasks(): Task[] {
+        const taskJSON = localStorage.getItem("TASKS");
+        if (taskJSON == null) return [];
+        return JSON.parse(taskJSON);
+    }  
+
+As you can see, TypeScript can seem like bloat but it is all about protecting yourself from stupid mistakes. By being explicit and thorough at creation we avoid many headaches down the line. Getting errors constantly when writing typescript means you are constantly writing potential bugs.
+
