@@ -10,6 +10,7 @@ type Task = {
 const list = document.querySelector("#list") as HTMLUListElement;
 const form = document.querySelector("#new-task-form") as HTMLFormElement;
 const input = document.querySelector("#new-task-title") as HTMLInputElement;
+const clearBtn = document.querySelector("#clear-button") as HTMLButtonElement;
 
 const tasks: Task[] = loadTasks();
 tasks.forEach(addListItem);
@@ -30,6 +31,8 @@ form?.addEventListener("submit", (e) => {
   addListItem(newTask);
   input.value = "";
 });
+
+clearBtn?.addEventListener("click", clearData);
 
 function addListItem(task: Task) {
   const item = document.createElement("li");
@@ -54,4 +57,9 @@ function loadTasks(): Task[] {
   const taskJSON = localStorage.getItem("TASKS");
   if (taskJSON == null) return [];
   return JSON.parse(taskJSON);
+}
+
+function clearData() {
+  localStorage.clear();
+  window.location.reload();
 }
